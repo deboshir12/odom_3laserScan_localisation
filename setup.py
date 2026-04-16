@@ -20,6 +20,8 @@ setup(
         (os.path.join('share', package_name, 'config'), glob('config/*.rviz')),
         # gzBridge конфиг
         (os.path.join('share', package_name, 'config'), glob('config/*.yaml')),
+        # gz world 
+        (os.path.join('share', package_name, 'worlds'), glob('worlds/*.sdf')),
     ],
     package_data={'': ['py.typed']},
     install_requires=['setuptools'],

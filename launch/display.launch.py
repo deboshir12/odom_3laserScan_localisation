@@ -22,7 +22,7 @@ def generate_launch_description():
     bridge_config = os.path.join(pkg_path, 'config', 'gz_bridge.yaml')
     urdf_content = xacro.process_file(xacro_file).toxml()
     rviz_config_file = os.path.join(pkg_path, 'config', 'robot.rviz')
-    world_file = os.path.join(pkg_path, 'worlds', 'warehouse.sdf')
+    world_file = os.path.join(pkg_path, 'worlds', 'Depot.sdf')
 
     
     tmp = tempfile.NamedTemporaryFile(mode='w', delete=False, suffix='.urdf')

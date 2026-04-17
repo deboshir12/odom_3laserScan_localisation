@@ -81,18 +81,27 @@ def generate_launch_description():
             output='both',
             parameters=[{'robot_description': urdf_content}]
         )
+    
+    map_to_odom = Node(
+            package='robot_pkg',
+            executable='tf_to_rviz',
+            name='map_to_base_link',
+            output='both'
+        )
+    
+    fixes_lidar = Node(
+            package='robot_pkg',
+            executable='fixed_lidar',
+            name='fixed_lidar_frame_id',
+            output='both'
+        )
 
 
     return LaunchDescription([
         declare_rviz_arg,
         robot_state_publisher_node,
-        Node(
-            package='tf2_ros',
-            executable='static_transform_publisher',
-            name='map_to_base_link',
-            output='both',
-            arguments=['0', '0', '0', '0', '0', '0', 'map', 'base_link']
-        ), 
+        fixes_lidar,
+        map_to_odom,
         rviz_node,
         gz_sim_exec,
         gz_bridge_node,

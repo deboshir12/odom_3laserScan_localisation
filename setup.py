@@ -38,6 +38,8 @@ setup(
     entry_points={
         'console_scripts': [
             'tf_to_rviz = robot_pkg.tf_to_rviz:main',
+            'reading_laser_scan = robot_pkg.reading_laser_scan:main',
+            'fixed_lidar = robot_pkg.fixed_lidar:main'
         ],
     },
 )

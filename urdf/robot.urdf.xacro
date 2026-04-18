@@ -325,7 +325,7 @@
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
     </joint>
   </xacro:macro>
-  <xacro:lidar_sensor_mount name="lidar_sensor" x="0.00" y="-0.21" z="${base_height/2 + 0.01}" roll="0" pitch="0" yaw="0"/>
+  <xacro:lidar_sensor_mount name="lidar_sensor" x="0.00" y="0" z="${base_height/2 + 0.01}" roll="0" pitch="0" yaw="0"/>
   <gazebo reference="lidar_sensor">
     <sensor name="range_lidar_sensor" type="gpu_lidar">
       <always_on>true</always_on>
@@ -336,7 +336,7 @@
       <lidar>
         <scan>  
           <horizontal>
-            <samples>360</samples>
+            <samples>1000</samples>
             <resolution>1</resolution>
             <min_angle>0</min_angle>
             <max_angle>6.28</max_angle>
@@ -344,7 +344,7 @@
         </scan>
         <range>
           <min>0.05</min>
-          <max>5.0</max>
+          <max>20.0</max>
           <resolution>0.01</resolution>
         </range>
       </lidar>

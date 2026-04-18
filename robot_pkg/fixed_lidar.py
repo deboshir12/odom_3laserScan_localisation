@@ -10,7 +10,7 @@ class MultiScanFixer(Node):
         self.sensors = {
             'lidar': {
                 'input_topic': '/range_lidar_raw',
-                'output_topic': '/range_lidar',
+                'output_topic': '/scan',
                 'frame_id': 'lidar_sensor',
             },
             'front': {

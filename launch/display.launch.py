@@ -17,6 +17,12 @@ def generate_launch_description():
     )
     use_rviz = LaunchConfiguration('use_rviz')
 
+    use_sim_time = LaunchConfiguration('use_sim_time')
+    declare_use_sim_time = DeclareLaunchArgument(
+    'use_sim_time',
+    default_value='true',
+    description='Use simulation time')
+
     pkg_path = get_package_share_directory('robot_pkg')
     xacro_file = os.path.join(pkg_path, 'urdf', 'robot.urdf.xacro')
     bridge_config = os.path.join(pkg_path, 'config', 'gz_bridge.yaml')
@@ -59,7 +65,7 @@ def generate_launch_description():
             executable='rviz2',
             output='both',
             arguments=['-d', rviz_config_file],
-            condition=IfCondition(use_rviz))
+            parameters=[{'use_sim_time': use_sim_time}])
 
     joint_state_publisher_gui_node =  Node(
             package='joint_state_publisher_gui',
@@ -79,7 +85,8 @@ def generate_launch_description():
             package='robot_state_publisher',
             executable='robot_state_publisher',
             output='both',
-            parameters=[{'robot_description': urdf_content}]
+            parameters=[{'robot_description': urdf_content},
+            {'use_sim_time': use_sim_time}]
         )
     
     map_to_odom = Node(
@@ -98,10 +105,10 @@ def generate_launch_description():
 
 
     return LaunchDescription([
+        declare_use_sim_time,
         declare_rviz_arg,
         robot_state_publisher_node,
         fixes_lidar,
-        map_to_odom,
         rviz_node,
         gz_sim_exec,
         gz_bridge_node,

@@ -41,7 +41,9 @@ setup(
             'reading_laser_scan = robot_pkg.reading_laser_scan:main',
             'fixed_lidar = robot_pkg.fixed_lidar:main',
             'route_sender = robot_pkg.route_sender:main',
-            'range_odom_corrector_map = robot_pkg.range_odom_corrector_map:main'
+            'range_odom_corrector_map = robot_pkg.range_odom_corrector_map:main',
+            'range_estimator_1 = robot_pkg.range_estimator_1:main',
+            'range_estimator_2 = robot_pkg.range_estimator_2:main'
         ],
     },
 )

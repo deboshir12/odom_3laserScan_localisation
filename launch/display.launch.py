@@ -89,17 +89,24 @@ def generate_launch_description():
             {'use_sim_time': use_sim_time}]
         )
     
-    map_to_odom = Node(
-            package='robot_pkg',
-            executable='tf_to_rviz',
-            name='map_to_base_link',
-            output='both'
-        )
-    
     fixes_lidar = Node(
             package='robot_pkg',
             executable='fixed_lidar',
             name='fixed_lidar_frame_id',
+            output='both'
+        )
+    
+    pose_estimator_node = Node(
+        package='robot_pkg',
+        executable='range_estimator_1',
+        name='range_estimator_node',
+        output='both'
+    )
+
+    map_to_odom = Node(
+            package='robot_pkg',
+            executable='range_estimator_2',
+            name='map_to_odom_link',
             output='both'
         )
 
@@ -112,6 +119,7 @@ def generate_launch_description():
         rviz_node,
         gz_sim_exec,
         gz_bridge_node,
-        spawn_model_node
-        
+        spawn_model_node,
+        # pose_estimator_node,
+        map_to_odom
     ])  

@@ -1,45 +1,108 @@
-import math
-
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import TransformStamped
-from tf2_ros import TransformBroadcaster
-from tf_transformations import quaternion_from_euler
+
+from geometry_msgs.msg import PoseArray
+from tf2_ros import Buffer, TransformListener, LookupException
+
+from typing import Optional
 
 
-class MapToOdomBroadcaster(Node):
+class TumTrajectoryRecorder(Node):
     def __init__(self):
-        super().__init__('map_to_odom_broadcaster')
-        self.br = TransformBroadcaster(self)
-        self.timer = self.create_timer(0.05, self.publish_tf)
+        super().__init__('tum_trajectory_recorder')
 
-        self.x = 0.0
-        self.y = 0.0
-        self.yaw = 0.0
+        # параметры
+        self.declare_parameter('pose_array_topic', '/diff_drive/pose')
+        self.declare_parameter('base_link_name', 'base_link')
+        self.declare_parameter('map_frame', 'odom')
+        self.declare_parameter('base_frame', 'base_link')
 
-    def publish_tf(self):
-        t = TransformStamped()
-        t.header.stamp = self.get_clock().now().to_msg()
-        t.header.frame_id = 'map'
-        t.child_frame_id = 'odom'
+        pose_topic = self.get_parameter('pose_array_topic').value
+        self.base_name = self.get_parameter('base_link_name').value
+        self.map_frame = self.get_parameter('map_frame').value
+        self.base_frame = self.get_parameter('base_frame').value
 
-        t.transform.translation.x = self.x
-        t.transform.translation.y = self.y
-        t.transform.translation.z = 0.0
+        # файлы
+        self.gt_file = open('gt.txt', 'w')
+        self.est_file = open('est.txt', 'w')
 
-        q = quaternion_from_euler(0.0, 0.0, self.yaw)
-        t.transform.rotation.x = q[0]
-        t.transform.rotation.y = q[1]
-        t.transform.rotation.z = q[2]
-        t.transform.rotation.w = q[3]
+        # подписка на ground truth
+        self.create_subscription(
+            PoseArray,
+            pose_topic,
+            self.gt_callback,
+            10
+        )
 
-        self.br.sendTransform(t)
+        # TF
+        self.tf_buffer = Buffer()
+        self.tf_listener = TransformListener(self.tf_buffer, self)
+
+        # таймер для оценки
+        self.create_timer(0.05, self.record_estimate)
+
+        self.get_logger().info('TUM trajectory recorder started')
+
+    # -------------------------------
+    # Ground truth из PoseArray
+    # -------------------------------
+    def gt_callback(self, msg: PoseArray):
+        if not msg.poses:
+            return
+
+        # ВАЖНО:
+        # PoseArray не содержит имён, поэтому предполагаем:
+        # base_link = первый элемент
+        pose = msg.poses[2]
+        # self.get_logger().info(msg.poses)
+
+        # время
+        now = self.get_clock().now().to_msg()
+        t = now.sec + now.nanosec * 1e-9
+
+        p = pose.position
+        q = pose.orientation
+
+        line = f"{t} {p.x} {p.y} {p.z} {q.x} {q.y} {q.z} {q.w}\n"
+        self.gt_file.write(line)
+
+    # -------------------------------
+    # Оценка из TF (map -> base_link)
+    # -------------------------------
+    def record_estimate(self):
+        try:
+            tf = self.tf_buffer.lookup_transform(
+                self.map_frame,
+                self.base_frame,
+                rclpy.time.Time()
+            )
+        except LookupException:
+            return
+        
+        now = self.get_clock().now().to_msg()
+        t = now.sec + now.nanosec * 1e-9
+
+        p = tf.transform.translation
+        q = tf.transform.rotation
+
+        line = f"{t} {p.x} {p.y} {p.z} {q.x} {q.y} {q.z} {q.w}\n"
+        self.est_file.write(line)
+
+    def destroy_node(self):
+        self.gt_file.close()
+        self.est_file.close()
+        super().destroy_node()
 
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = MapToOdomBroadcaster()
-    rclpy.spin(node)
+def main():
+    rclpy.init()
+    node = TumTrajectoryRecorder()
+
+    try:
+        rclpy.spin(node)
+    except KeyboardInterrupt:
+        pass
+
     node.destroy_node()
     rclpy.shutdown()
 

@@ -34,15 +34,42 @@ roslaunch slam_toolbox online_async_launch.py use_sim_time:=true
 ros2 run nav2_map_server map_saver_cli -f ~/diplom/src/robot_pkg/maps/warehouse_map
 ```
 
-После построения карты можно запускать nav2. Первая команда поднимает map_server. Вторая запускает коррекцию локализации, третья остальную часть nav2. ЗАпускать в разных терминалах
+После построения карты можно запускать nav2. Первая команда поднимает map_server. Вторая запускает коррекцию локализации (сейчас уже просто запускается из лаунча), третья остальную часть nav2. ЗАпускать в разных терминалах
 ```bash
-ros2 launch robot_pkg map_server.launch.py map_yaml:=path/to/yaml/config
+ros2 launch robot_pkg map_server.launch.py map_yaml:='/home/deboshir/diplom/src/robot_pkg/maps/warehouse_map.yaml' 
 ```
 ```bash
-ros2 run robot_pkg range_odom_corrector_map
+ros2 run robot_pkg range_odom_corrector_map # пережиток эпохи 
 ```
 ```bash
-ros2 launch nav2_bringup navigation_launch.py   params_file:=path/to/yaml/config   use_sim_time:=true
+ros2 ros2 launch nav2_bringup navigation_launch.py   params_file:='/home/deboshir/diplom/src/robot_pkg/config/nav2_params.yaml'    use_sim_time:=true
 ```
 
-Есть еще небольшие проблемы с тем, что Rviz принимает данные с дальномеров, но не отображает их, пытаюсь решить. Сейчас одометрия корректируется. Врде все нормально, однако не работает навигая по точкам через нав. Это связано с сильно нагруженной нодой коррекции одометрии. Есть уже план как это пофиксить.
+Есть еще небольшие проблемы с тем, что Rviz принимает данные с дальномеров, но не отображает их, пытаюсь решить. Сейчас одометрия корректируется. Врде все нормально, однако не работает навигая по точкам через нав. Это связано с сильно нагруженной нодой коррекции одометрии. (fixed)
+
+evo_traj tum est.txt --ref gt.txt -va --plot
+evo_ape tum est.txt gt.txt -va
+
+RPE w.r.t. translation part (m)
+for delta = 1 (frames) using consecutive pairs
+(with SE(3) Umeyama alignment)
+
+       max	0.040548
+      mean	0.002209
+    median	0.001843
+       min	0.000007
+      rmse	0.002976
+       sse	0.044430
+       std	0.001995
+
+APE w.r.t. translation part (m)
+(with SE(3) Umeyama alignment)
+
+       max	0.103319
+      mean	0.035337
+    median	0.030197
+       min	0.001807
+      rmse	0.041656
+       sse	8.704005
+       std	0.022057
+
